@@ -87,5 +87,5 @@ module.exports = {
   init,
   add,
   remove,
-  list
+  list,
 };
