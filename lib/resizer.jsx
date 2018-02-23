@@ -7,14 +7,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+const resizeAnchors = {
+  NW: 'nw',
+  NE: 'ne',
+  SW: 'sw',
+  SE: 'se',
+};
+
 let $container;
 const origSrc = new Image();
 const eventState = {};
 const constrain = true;
 const minWidth = 60; // Change as required
 const minHeight = 60;
-const maxWidth = 800; // Change as required
-const maxHeight = 900;
+const maxWidth = 1800; // Change as required
+const maxHeight = 1900;
 const resizeCanvas = document.createElement('canvas');
 
 function saveEventState(e) {
@@ -33,43 +40,50 @@ function saveEventState(e) {
   eventState.evnt = e;
 }
 
-function newDimensions(e) {
+function newDimensions(e, activeAnchor) {
   const mouse = {};
   let width;
   let height;
   let left;
   let top;
 
-  mouse.x = (e.clientX || e.pageX || e.originalEvent.touches[0].clientX) + $(window).scrollLeft();
-  mouse.y = (e.clientY || e.pageY || e.originalEvent.touches[0].clientY) + $(window).scrollTop();
+  mouse.x = (e.clientX || e.pageX) + $(window).scrollLeft();
+  mouse.y = (e.clientY || e.pageY) + $(window).scrollTop();
 
   // Position image differently depending on the corner dragged and constraints
-  if ($(eventState.evnt.target).hasClass('resize-handle-se')) {
-    width = mouse.x - eventState.container_left;
-    height = mouse.y - eventState.container_top;
-    left = eventState.container_left;
-    top = eventState.container_top;
-  } else if ($(eventState.evnt.target).hasClass('resize-handle-sw')) {
-    width = eventState.container_width - (mouse.x - eventState.container_left);
-    height = mouse.y - eventState.container_top;
-    left = mouse.x;
-    top = eventState.container_top;
-  } else if ($(eventState.evnt.target).hasClass('resize-handle-nw')) {
-    width = eventState.container_width - (mouse.x - eventState.container_left);
-    height = eventState.container_height - (mouse.y - eventState.container_top);
-    left = mouse.x;
-    top = mouse.y;
-    if (constrain || e.shiftKey) {
-      top = mouse.y - ((width / origSrc.width * origSrc.height) - height);
-    }
-  } else if ($(eventState.evnt.target).hasClass('resize-handle-ne')) {
-    width = mouse.x - eventState.container_left;
-    height = eventState.container_height - (mouse.y - eventState.container_top);
-    left = eventState.container_left;
-    top = mouse.y;
-    if (constrain || e.shiftKey) {
-      top = mouse.y - ((width / origSrc.width * origSrc.height) - height);
-    }
+  switch (activeAnchor) {
+    case resizeAnchors.SE:
+      width = mouse.x - eventState.container_left;
+      height = mouse.y - eventState.container_top;
+      left = eventState.container_left;
+      top = eventState.container_top;
+      break;
+    case resizeAnchors.SW:
+      width = eventState.container_width - (mouse.x - eventState.container_left);
+      height = mouse.y - eventState.container_top;
+      left = mouse.x;
+      top = eventState.container_top;
+      break;
+    case resizeAnchors.NW:
+      width = eventState.container_width - (mouse.x - eventState.container_left);
+      height = eventState.container_height - (mouse.y - eventState.container_top);
+      left = mouse.x;
+      top = mouse.y;
+      if (constrain || e.shiftKey) {
+        top = mouse.y - ((width / origSrc.width * origSrc.height) - height);
+      }
+      break;
+    case resizeAnchors.NE:
+      width = mouse.x - eventState.container_left;
+      height = eventState.container_height - (mouse.y - eventState.container_top);
+      left = eventState.container_left;
+      top = mouse.y;
+      if (constrain || e.shiftKey) {
+        top = mouse.y - ((width / origSrc.width * origSrc.height) - height);
+      }
+      break;
+    default:
+      console.error('unrecognized anchor', eventState.evnt.target);
   }
 
   // Optionally maintain aspect ratio
@@ -101,10 +115,12 @@ class Resizer extends React.Component {
     super(props);
 
     this.state = {
-      resizeMode: false,
-      moveMode: false,
       targetImageSrc: '',
     };
+
+    this.activeAnchor = null;
+    this.resizeMode = false;
+    this.moveMode = false;
 
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -113,8 +129,6 @@ class Resizer extends React.Component {
     this.resizeImage = this.resizeImage.bind(this);
     this.resizing = this.resizing.bind(this);
     this.moving = this.moving.bind(this);
-    this.endMoving = this.endMoving.bind(this);
-    this.endResize = this.endResize.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -122,6 +136,11 @@ class Resizer extends React.Component {
       origSrc.src = nextProps.src;
       this.setState({ targetImageSrc: nextProps.src });
     }
+  }
+
+  componentDidMount() {
+    $(document).on('mousemove', this.handleMouseMove);
+    $(document).on('mouseup', this.handleMouseUp);
   }
 
   resizeImage(width, height) {
@@ -132,7 +151,7 @@ class Resizer extends React.Component {
   }
 
   resizing(e) {
-    const dims = newDimensions(e);
+    const dims = newDimensions(e, this.activeAnchor);
     if (dims.width > minWidth
         && dims.height > minHeight
         && dims.width < maxWidth
@@ -148,21 +167,13 @@ class Resizer extends React.Component {
     newPosition(e);
   }
 
-  endMoving() {
-    this.setState({ moveMode: false });
-  }
-
-  endResize() {
-    this.setState({ resizeMode: false });
-  }
-
   handleMouseMove(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (this.state.resizeMode) {
+    if (this.resizeMode) {
       this.resizing(e);
-    } else if (this.state.moveMode) {
+    } else if (this.moveMode) {
       this.moving(e);
     }
   }
@@ -171,55 +182,49 @@ class Resizer extends React.Component {
     e.preventDefault();
     e.stopPropagation();
 
-    if (this.state.resizeMode) {
-      this.endResize();
-    } else if (this.state.moveMode) {
-      this.endMoving();
-    }
+    this.activeAnchor = null;
+    this.resizeMode = false;
+    this.moveMode = false;
   }
 
-  startResizeMode(e) {
+  startResizeMode(e, corner) {
     e.preventDefault();
     e.stopPropagation();
     saveEventState(e);
-    this.setState({ resizeMode: true });
+    this.activeAnchor = corner;
+    this.resizeMode = true;
   }
 
   startMoveMode(e) {
     e.preventDefault();
     e.stopPropagation();
     saveEventState(e);
-    this.setState({ moveMode: true });
+    this.moveMode = true;
   }
 
   resizeHandle(corner) {
     return (
       <span
         className={`resize-handle resize-handle-${corner}`}
-        onMouseDown={this.startResizeMode}
+        onMouseDown={(e) => { this.startResizeMode(e, corner); }}
       />
     );
   }
 
   render() {
     return (
-      <div
-        className="component"
-        onMouseMove={this.handleMouseMove}
-        onMouseUp={this.handleMouseUp}
-        ref={(el) => { $container = $(el); }}
-      >
-        <div className="resize-container">
-          {this.resizeHandle('nw')}
-          {this.resizeHandle('ne')}
+      <div className="component" >
+        <div className="resize-container" ref={(el) => { $container = $(el); }} >
+          {this.resizeHandle(resizeAnchors.NW)}
+          {this.resizeHandle(resizeAnchors.NE)}
           <img
             className="resize-image"
             src={this.state.targetImageSrc}
             onMouseDown={this.startMoveMode}
             alt="new clothing"
           />
-          {this.resizeHandle('sw')}
-          {this.resizeHandle('se')}
+          {this.resizeHandle(resizeAnchors.SW)}
+          {this.resizeHandle(resizeAnchors.SE)}
         </div>
       </div>
     );
