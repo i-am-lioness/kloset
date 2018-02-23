@@ -1,5 +1,6 @@
 import React from 'react';
 import ListView from './list-view';
+import Resizer from './resizer';
 
 const fs = require('fs');
 const clothingDB = require('../db.js');
@@ -38,7 +39,7 @@ class Home extends React.Component {
       f = files[i];
       const displayedPath = `file://${encodeURI(f.path)}`;
       this.setState({ displayedPath });
-      this.storeFile(f.path);
+      // this.storeFile(f.path);
     }
   }
 
@@ -65,7 +66,7 @@ class Home extends React.Component {
   render() {
     return (
       <div>
-        <img src={this.state.displayedPath} alt="newImage" />
+        <Resizer src={this.state.displayedPath} />
         <ListView items={this.state.clothing} />
       </div>
     );

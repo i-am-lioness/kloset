@@ -1,20 +1,15 @@
 /* eslint-env browser */
 import React from 'react';
 import PropTypes from 'prop-types';
+import ImageLink from './image-link';
+
 // import { CSSTransitionGroup } from 'react-transition-group';
 
 function eachItem(item, idx) {
-  const binaryData = [];
-  binaryData.push(item.file);
-  const blob = new Blob(binaryData);
-  const imgURL = URL.createObjectURL(blob);
-
   return (
-    <img
-      className="folder-content-item list-group-item list-group-item-action"
+    <ImageLink
       key={item.timeStamp}
-      src={imgURL}
-      alt={item.name}
+      item={item}
     />
   );
 }
