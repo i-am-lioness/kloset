@@ -29,14 +29,13 @@ function init() {
   });
 }
 
-function add(name, file) {
+function add(blob) {
   return new Promise((resolve, reject) => {
     const trans = db.transaction(CLOTHING_STORE_NAME, 'readwrite');
     const store = trans.objectStore(CLOTHING_STORE_NAME);
     const request = store.put({
       timeStamp: new Date().getTime(),
-      name,
-      file,
+      blob,
     });
 
     request.onsuccess = resolve;

@@ -17,6 +17,7 @@ class Home extends React.Component {
     this.storeFile = this.storeFile.bind(this);
     this.loadData = this.loadData.bind(this);
     this.onNewImage = this.onNewImage.bind(this);
+    this.handleSaveImage = this.handleSaveImage.bind(this);
   }
 
   componentWillMount() {
@@ -63,10 +64,14 @@ class Home extends React.Component {
     clothingDB.init().then(this.loadData);
   }
 
+  handleSaveImage(blob) {
+    clothingDB.add(blob).then(this.loadData);
+  }
+
   render() {
     return (
       <div>
-        <Resizer src={this.state.displayedPath} />
+        <Resizer src={this.state.displayedPath} saveImage={this.handleSaveImage} />
         <ListView items={this.state.clothing} />
       </div>
     );

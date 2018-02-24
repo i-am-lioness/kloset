@@ -121,6 +121,7 @@ class Resizer extends React.Component {
     this.activeAnchor = null;
     this.resizeMode = false;
     this.moveMode = false;
+    this.targetImageElement = null;
 
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -129,6 +130,7 @@ class Resizer extends React.Component {
     this.resizeImage = this.resizeImage.bind(this);
     this.resizing = this.resizing.bind(this);
     this.moving = this.moving.bind(this);
+    this.handleSaveImage = this.handleSaveImage.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -211,9 +213,29 @@ class Resizer extends React.Component {
     );
   }
 
+  handleSaveImage() {
+    // Find the part of the image that is inside the crop box
+
+    const left = $('.overlay').offset().left - $container.offset().left;
+    const top = $('.overlay').offset().top - $container.offset().top;
+    const width = $('.overlay').width();
+    const height = $('.overlay').height();
+
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = width;
+    cropCanvas.height = height;
+
+    cropCanvas.getContext('2d').drawImage(this.targetImageElement, left, top, width, height, 0, 0, width, height);
+    cropCanvas.toBlob(this.props.saveImage);
+    //window.open(cropCanvas.toDataURL('image/png'));
+  }
+
   render() {
     return (
       <div className="component" >
+        <div className="overlay">
+          <div className="overlay-inner" />
+        </div>
         <div className="resize-container" ref={(el) => { $container = $(el); }} >
           {this.resizeHandle(resizeAnchors.NW)}
           {this.resizeHandle(resizeAnchors.NE)}
@@ -221,11 +243,13 @@ class Resizer extends React.Component {
             className="resize-image"
             src={this.state.targetImageSrc}
             onMouseDown={this.startMoveMode}
+            ref={(el) => { this.targetImageElement = el; }}
             alt="new clothing"
           />
           {this.resizeHandle(resizeAnchors.SW)}
           {this.resizeHandle(resizeAnchors.SE)}
         </div>
+        <button onClick={this.handleSaveImage}>Save Image</button>
       </div>
     );
   }
@@ -242,6 +266,7 @@ Resizer.defaultProps = {
 
 Resizer.propTypes = {
   src: PropTypes.string.isRequired,
+  saveImage: PropTypes.func.isRequired,
 };
 
 export default Resizer;
