@@ -1,3 +1,13 @@
+.resizer {
+    position: relative;
+}
+    .resizer button{
+        position: absolute;
+        z-index: 50;
+        top: 50px;
+        left: 50px;
+    }
+
 .resize-container {
     position: relative;
     display: inline-block;
@@ -6,7 +16,8 @@
 }
 
 .resize-container img {
-    display: block
+    display: block;
+    opacity: 0.5;
 }
 
 .resize-container:hover img,
@@ -133,12 +144,12 @@
 	z-index: -1;
 }
 
-.top_view_outline {
+.dress_view_outline {
     position: absolute;
     top: 151px;
     z-index: 999;
     width: 283px;
-    height: 346px;
+    height: 802px;
     border: solid 2px rgba(222,60,80,.9);
     box-sizing: content-box;
     pointer-events: none;

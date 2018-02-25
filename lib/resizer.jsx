@@ -261,12 +261,6 @@ class Resizer extends React.Component {
 }
 
 Resizer.defaultProps = {
-  /* folderMap: {},
-  linkMap: {},
-  currentFolder: ROOT_FOLDER,
-  admin: false,
-  deleteLink: null,
-  editLink: null, */
 };
 
 Resizer.propTypes = {

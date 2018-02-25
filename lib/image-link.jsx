@@ -13,10 +13,6 @@ class ImageLink extends React.Component {
 
   render() {
     const { item } = this.props;
-    /* const binaryData = [];
-    binaryData.push(item.file);
-    const blob = new Blob(binaryData);
-    const imgURL = URL.createObjectURL(blob); */
     const imgURL = URL.createObjectURL(item.blob);
 
     return (

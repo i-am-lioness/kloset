@@ -1,6 +1,6 @@
 import React from 'react';
 import ListView from './list-view';
-import ClothingEditor from './clothing-editor';
+// import ClothingEditor from './clothing-editor';
 import ClothingRegister from './clothing-register';
 
 const fs = require('fs');
@@ -14,7 +14,7 @@ class Home extends React.Component {
       tops: [],
       bottoms: [],
       droppedImagePath: null,
-      showClothingEditor: false,
+      showClothingRegister: false,
     };
 
     this.storeFile = this.storeFile.bind(this);
@@ -44,7 +44,7 @@ class Home extends React.Component {
       const droppedImagePath = `file://${encodeURI(f.path)}`;
       this.setState({
         droppedImagePath,
-        showClothingEditor: true,
+        showClothingRegister: true,
       });
     }
   }
@@ -77,17 +77,25 @@ class Home extends React.Component {
   }
 
   render() {
-    return (
+    let display = (
       <div>
-        { this.state.showClothingEditor &&
-          <ClothingRegister
-            onSaveClothing={this.saveClothing}
-            newImage={this.state.droppedImagePath}
-          />}
         <h1>Tops</h1>
         <ListView items={this.state.tops} />
         <h1>Bottoms</h1>
         <ListView items={this.state.bottoms} />
+      </div>
+    );
+
+    if (this.state.showClothingRegister) {
+      display = (<ClothingRegister
+        onSaveClothing={this.saveClothing}
+        newImage={this.state.droppedImagePath}
+      />);
+    }
+
+    return (
+      <div>
+        { display }
       </div>
     );
   }
