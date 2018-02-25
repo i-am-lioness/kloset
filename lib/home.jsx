@@ -1,6 +1,6 @@
 import React from 'react';
 import ListView from './list-view';
-import Resizer from './resizer';
+import ClothingEditor from './clothing-editor';
 
 const fs = require('fs');
 const clothingDB = require('../db.js');
@@ -11,13 +11,14 @@ class Home extends React.Component {
 
     this.state = {
       clothing: [],
-      displayedPath: '',
+      droppedImagePath: null,
+      showClothingEditor: false,
     };
 
     this.storeFile = this.storeFile.bind(this);
     this.loadData = this.loadData.bind(this);
     this.onNewImage = this.onNewImage.bind(this);
-    this.handleSaveImage = this.handleSaveImage.bind(this);
+    this.saveClothing = this.saveClothing.bind(this);
   }
 
   componentWillMount() {
@@ -38,9 +39,11 @@ class Home extends React.Component {
     let f;
     for (let i = 0; i < files.length; i += 1) {
       f = files[i];
-      const displayedPath = `file://${encodeURI(f.path)}`;
-      this.setState({ displayedPath });
-      // this.storeFile(f.path);
+      const droppedImagePath = `file://${encodeURI(f.path)}`;
+      this.setState({
+        droppedImagePath,
+        showClothingEditor: true,
+      });
     }
   }
 
@@ -64,14 +67,18 @@ class Home extends React.Component {
     clothingDB.init().then(this.loadData);
   }
 
-  handleSaveImage(blob) {
-    clothingDB.add(blob).then(this.loadData);
+  saveClothing(item) {
+    clothingDB.add(item).then(this.loadData);
   }
 
   render() {
     return (
       <div>
-        <Resizer src={this.state.displayedPath} saveImage={this.handleSaveImage} />
+        { this.state.showClothingEditor &&
+          <ClothingEditor
+            onSaveClothing={this.saveClothing}
+            newImage={this.state.droppedImagePath}
+          />}
         <ListView items={this.state.clothing} />
       </div>
     );

@@ -115,7 +115,7 @@ class Resizer extends React.Component {
     super(props);
 
     this.state = {
-      targetImageSrc: '',
+      targetImageSrc: this.props.src,
     };
 
     this.activeAnchor = null;
@@ -130,19 +130,21 @@ class Resizer extends React.Component {
     this.resizeImage = this.resizeImage.bind(this);
     this.resizing = this.resizing.bind(this);
     this.moving = this.moving.bind(this);
-    this.handleSaveImage = this.handleSaveImage.bind(this);
+    this.handleCropImage = this.handleCropImage.bind(this);
   }
-
+  /*
   componentWillReceiveProps(nextProps) {
     if (nextProps.src !== this.props.src) {
       origSrc.src = nextProps.src;
       this.setState({ targetImageSrc: nextProps.src });
     }
   }
-
+  */
   componentDidMount() {
     $(document).on('mousemove', this.handleMouseMove);
     $(document).on('mouseup', this.handleMouseUp);
+
+    origSrc.src = this.props.src;
   }
 
   resizeImage(width, height) {
@@ -213,29 +215,40 @@ class Resizer extends React.Component {
     );
   }
 
-  handleSaveImage() {
+  handleCropImage() {
     // Find the part of the image that is inside the crop box
 
-    const left = $('.overlay').offset().left - $container.offset().left;
-    const top = $('.overlay').offset().top - $container.offset().top;
-    const width = $('.overlay').width();
-    const height = $('.overlay').height();
+    const left = $('.crop_box').offset().left - $container.offset().left;
+    const top = $('.crop_box').offset().top - $container.offset().top;
+    const width = $('.crop_box').width();
+    const height = $('.crop_box').height();
 
+    /*
     const cropCanvas = document.createElement('canvas');
     cropCanvas.width = width;
     cropCanvas.height = height;
 
     cropCanvas.getContext('2d').drawImage(this.targetImageElement, left, top, width, height, 0, 0, width, height);
     cropCanvas.toBlob(this.props.saveImage);
-    //window.open(cropCanvas.toDataURL('image/png'));
+    */
+    resizeCanvas.width = width;
+    resizeCanvas.height = height;
+    resizeCanvas.getContext('2d').drawImage(this.targetImageElement, left, top, width, height, 0, 0, width, height);
+    this.setState({ targetImageSrc: resizeCanvas.toDataURL('image/png') });
+    resizeCanvas.toBlob(this.props.onImageCropped);
+
+    $container.offset({
+      left: $('.crop_box').offset().left,
+      top: $('.crop_box').offset().top,
+    });
   }
 
   render() {
     return (
-      <div className="component" >
-        <div className="overlay">
-          <div className="overlay-inner" />
-        </div>
+      <div className="resizer" >
+        <img className="body" alt="body" src="img/body2.png" />
+        <button onClick={this.handleCropImage} type="button">Crop Image</button>
+        <div className={`crop_box ${this.props.clothingType}_view_outline`} />
         <div className="resize-container" ref={(el) => { $container = $(el); }} >
           {this.resizeHandle(resizeAnchors.NW)}
           {this.resizeHandle(resizeAnchors.NE)}
@@ -249,7 +262,7 @@ class Resizer extends React.Component {
           {this.resizeHandle(resizeAnchors.SW)}
           {this.resizeHandle(resizeAnchors.SE)}
         </div>
-        <button onClick={this.handleSaveImage}>Save Image</button>
+        
       </div>
     );
   }
@@ -266,7 +279,8 @@ Resizer.defaultProps = {
 
 Resizer.propTypes = {
   src: PropTypes.string.isRequired,
-  saveImage: PropTypes.func.isRequired,
+  clothingType: PropTypes.string.isRequired,
+  onImageCropped: PropTypes.func.isRequired,
 };
 
 export default Resizer;

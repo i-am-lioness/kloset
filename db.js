@@ -29,14 +29,12 @@ function init() {
   });
 }
 
-function add(blob) {
+function add(item) {
   return new Promise((resolve, reject) => {
     const trans = db.transaction(CLOTHING_STORE_NAME, 'readwrite');
     const store = trans.objectStore(CLOTHING_STORE_NAME);
-    const request = store.put({
-      timeStamp: new Date().getTime(),
-      blob,
-    });
+    item.timeStamp = new Date().getTime();
+    const request = store.put(item);
 
     request.onsuccess = resolve;
 
