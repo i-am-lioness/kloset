@@ -3,7 +3,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { clothingTypes } from './kloset';
 
-class ClothingEditor extends React.Component {
+import Resizer from './resizer';
+
+class ClothingRegister extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -25,7 +27,7 @@ class ClothingEditor extends React.Component {
   handleSubmit(event) {
     this.props.onSaveClothing({
       blob: this.state.blob,
-      clothingType: this.state.clothingType,
+      type: this.state.clothingType,
     });
   }
 
@@ -51,18 +53,23 @@ class ClothingEditor extends React.Component {
           <br />
           <input type="submit" value="Save" />
         </div>
+        <Resizer
+          src={this.props.newImage}
+          onImageCropped={this.handleImageChange}
+          clothingType={this.state.clothingType}
+        />
       </form>
 
     );
   }
 }
 
-ClothingEditor.defaultProps = {
+ClothingRegister.defaultProps = {
 };
 
-ClothingEditor.propTypes = {
+ClothingRegister.propTypes = {
   onSaveClothing: PropTypes.func.isRequired,
   newImage: PropTypes.string.isRequired,
 };
 
-export default ClothingEditor;
+export default ClothingRegister;

@@ -223,14 +223,6 @@ class Resizer extends React.Component {
     const width = $('.crop_box').width();
     const height = $('.crop_box').height();
 
-    /*
-    const cropCanvas = document.createElement('canvas');
-    cropCanvas.width = width;
-    cropCanvas.height = height;
-
-    cropCanvas.getContext('2d').drawImage(this.targetImageElement, left, top, width, height, 0, 0, width, height);
-    cropCanvas.toBlob(this.props.saveImage);
-    */
     resizeCanvas.width = width;
     resizeCanvas.height = height;
     resizeCanvas.getContext('2d').drawImage(this.targetImageElement, left, top, width, height, 0, 0, width, height);
@@ -262,7 +254,7 @@ class Resizer extends React.Component {
           {this.resizeHandle(resizeAnchors.SW)}
           {this.resizeHandle(resizeAnchors.SE)}
         </div>
-        
+
       </div>
     );
   }

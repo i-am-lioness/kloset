@@ -14,10 +14,12 @@ function init() {
         db.deleteObjectStore(CLOTHING_STORE_NAME);
       }
 
-      db.createObjectStore(
+      const objectStore = db.createObjectStore(
         CLOTHING_STORE_NAME,
         { keyPath: 'timeStamp' }
       );
+
+      objectStore.createIndex('type', 'type', { unique: false });
     };
 
     request.onsuccess = (e) => {
@@ -42,14 +44,19 @@ function add(item) {
   });
 }
 
-function list() {
+function list(query) {
   return new Promise((resolve, reject) => {
     const trans = db.transaction(CLOTHING_STORE_NAME, 'readwrite');
     const store = trans.objectStore(CLOTHING_STORE_NAME);
 
-    // Get everything in the store;
-    const keyRange = IDBKeyRange.lowerBound(0);
-    const request = store.openCursor(keyRange);
+    let request;
+    if (query && query.type) {
+      const index = store.index('type');
+      request = index.openCursor(IDBKeyRange.only(query.type));
+    } else {
+      request = store.openCursor();
+    }
+
     const results = [];
 
     request.onsuccess = (e) => {

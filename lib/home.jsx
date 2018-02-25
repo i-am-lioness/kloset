@@ -1,6 +1,7 @@
 import React from 'react';
 import ListView from './list-view';
 import ClothingEditor from './clothing-editor';
+import ClothingRegister from './clothing-register';
 
 const fs = require('fs');
 const clothingDB = require('../db.js');
@@ -10,7 +11,8 @@ class Home extends React.Component {
     super(props);
 
     this.state = {
-      clothing: [],
+      tops: [],
+      bottoms: [],
       droppedImagePath: null,
       showClothingEditor: false,
     };
@@ -58,8 +60,11 @@ class Home extends React.Component {
   }
 
   loadData() {
-    clothingDB.list().then((clothing) => {
-      this.setState({ clothing });
+    clothingDB.list({ type: 'top' }).then((tops) => {
+      this.setState({ tops });
+    });
+    clothingDB.list({ type: 'bottom' }).then((bottoms) => {
+      this.setState({ bottoms });
     });
   }
 
@@ -75,11 +80,14 @@ class Home extends React.Component {
     return (
       <div>
         { this.state.showClothingEditor &&
-          <ClothingEditor
+          <ClothingRegister
             onSaveClothing={this.saveClothing}
             newImage={this.state.droppedImagePath}
           />}
-        <ListView items={this.state.clothing} />
+        <h1>Tops</h1>
+        <ListView items={this.state.tops} />
+        <h1>Bottoms</h1>
+        <ListView items={this.state.bottoms} />
       </div>
     );
   }
