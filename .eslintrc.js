@@ -9,6 +9,7 @@ module.exports = {
         "import"
     ],
     "rules": {
+        "arrow-body-style": 1,
         "object-shorthand": 0,
         "no-underscore-dangle": 0,
         "prefer-template": 1,
@@ -22,6 +23,8 @@ module.exports = {
         "no-unused-expressions": 1,
         "class-methods-use-this": 1,
         "react/sort-comp": 0,
-        "import/no-extraneous-dependencies": [0, {"devDependencies": ["**/*.test.js", "**/*.spec.js", "test/*"]}]
+        "import/no-extraneous-dependencies": [0, {"devDependencies": ["**/*.test.js", "**/*.spec.js", "test/*"]}],
+        "jsx-a11y/click-events-have-key-events": 0,
+        "jsx-a11y/no-noninteractive-element-interactions": 0,
     }
 };

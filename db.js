@@ -1,9 +1,10 @@
 let db;
 const CLOTHING_STORE_NAME = 'clothing';
+const OUTFIT_STORE_NAME = 'outfits';
 
 function init() {
   return new Promise((resolve, reject) => {
-    const version = 1;
+    const version = 2;
     const request = indexedDB.open('kloset', version);
 
     // We can only create Object stores in a versionchange transaction.
@@ -20,6 +21,16 @@ function init() {
       );
 
       objectStore.createIndex('type', 'type', { unique: false });
+      objectStore.createIndex('season', 'seasons', { unique: false });
+
+      const outfitStore = db.createObjectStore(
+        OUTFIT_STORE_NAME,
+        { keyPath: 'timeStamp' }
+      );
+
+      outfitStore.createIndex('top', 'top', { unique: false });
+      outfitStore.createIndex('bottom', 'bottom', { unique: false });
+      outfitStore.createIndex('outer', 'outer', { unique: false });
     };
 
     request.onsuccess = (e) => {
@@ -31,17 +42,29 @@ function init() {
   });
 }
 
-function add(item) {
+
+function put(item, isNew) {
   return new Promise((resolve, reject) => {
     const trans = db.transaction(CLOTHING_STORE_NAME, 'readwrite');
     const store = trans.objectStore(CLOTHING_STORE_NAME);
-    item.timeStamp = new Date().getTime();
+
+    if (isNew) {
+      item.timeStamp = new Date().getTime();
+    }
     const request = store.put(item);
 
     request.onsuccess = resolve;
 
     request.onerror = reject;
   });
+}
+
+function add(item) {
+  return put(item, true);
+}
+
+function update(item) {
+  return put(item, false);
 }
 
 function list(query) {
@@ -90,6 +113,7 @@ function remove(id) {
 module.exports = {
   init,
   add,
+  update,
   remove,
   list,
 };

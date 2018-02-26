@@ -1,10 +1,15 @@
 import React from 'react';
 import ListView from './list-view';
-// import ClothingEditor from './clothing-editor';
+import ClothingEditor from './clothing-editor';
 import ClothingRegister from './clothing-register';
 
-const fs = require('fs');
 const clothingDB = require('../db.js');
+
+const views = {
+  HOME: 0,
+  REGISTER: 1,
+  EDIT: 2,
+};
 
 class Home extends React.Component {
   constructor(props) {
@@ -14,13 +19,15 @@ class Home extends React.Component {
       tops: [],
       bottoms: [],
       droppedImagePath: null,
-      showClothingRegister: false,
+      view: views.HOME,
     };
 
-    this.storeFile = this.storeFile.bind(this);
     this.loadData = this.loadData.bind(this);
     this.onNewImage = this.onNewImage.bind(this);
     this.saveClothing = this.saveClothing.bind(this);
+    this.updateClothing = this.updateClothing.bind(this);
+    this.viewClothing = this.viewClothing.bind(this);
+    this.navigateHome = this.navigateHome.bind(this);
   }
 
   componentWillMount() {
@@ -44,19 +51,9 @@ class Home extends React.Component {
       const droppedImagePath = `file://${encodeURI(f.path)}`;
       this.setState({
         droppedImagePath,
-        showClothingRegister: true,
+        view: views.REGISTER,
       });
     }
-  }
-
-  storeFile(filepath) {
-    fs.readFile(filepath, (err, data) => {
-      if (err) {
-        return Promise.reject(err);
-      }
-
-      return clothingDB.add(filepath, data).then(this.loadData);
-    });
   }
 
   loadData() {
@@ -76,25 +73,54 @@ class Home extends React.Component {
     clothingDB.add(item).then(this.loadData);
   }
 
-  render() {
-    let display = (
-      <div>
-        <h1>Tops</h1>
-        <ListView items={this.state.tops} />
-        <h1>Bottoms</h1>
-        <ListView items={this.state.bottoms} />
-      </div>
-    );
+  updateClothing(item) {
+    return clothingDB.update(item);
+  }
 
-    if (this.state.showClothingRegister) {
-      display = (<ClothingRegister
-        onSaveClothing={this.saveClothing}
-        newImage={this.state.droppedImagePath}
-      />);
+  viewClothing(currentItem) {
+    this.setState({
+      view: views.EDIT,
+      currentItem,
+    });
+  }
+
+  navigateHome() {
+    this.setState({ view: views.HOME });
+  }
+
+  render() {
+    let display;
+
+    let homeButton = <button onClick={this.navigateHome} type="button">Home</button>;
+
+    switch (this.state.view) {
+      case views.REGISTER:
+        display = (<ClothingRegister
+          onSaveClothing={this.saveClothing}
+          newImage={this.state.droppedImagePath}
+        />);
+        break;
+      case views.EDIT:
+        display = (<ClothingEditor
+          onUpdateClothing={this.updateClothing}
+          currentItem={this.state.currentItem}
+        />);
+        break;
+      default:
+        homeButton = null;
+        display = (
+          <div>
+            <h1>Tops</h1>
+            <ListView items={this.state.tops} onClothingClicked={this.viewClothing} />
+            <h1>Bottoms</h1>
+            <ListView items={this.state.bottoms} onClothingClicked={this.viewClothing} />
+          </div>
+        );
     }
 
     return (
       <div>
+        { homeButton }
         { display }
       </div>
     );

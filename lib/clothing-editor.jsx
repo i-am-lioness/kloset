@@ -1,55 +1,77 @@
 /* eslint jsx-a11y/label-has-for: 0 */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { clothingTypes } from './kloset';
+import { seasonOptions } from './kloset-util';
 
 class ClothingEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      clothingType: clothingTypes.TOP,
+      season: props.currentItem.season || -1,
+      description: props.currentItem.description || '',
+      modified: false,
     };
 
-    this.handleChange = this.handleChange.bind(this);
+    this.currentItem = Object.assign({}, props.currentItem);
+
+    this.handleSeasonChange = this.handleSeasonChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleImageChange = this.handleImageChange.bind(this);
+    this.handleInput = this.handleInput.bind(this);
+    this.reset = this.reset.bind(this);
   }
 
   componentDidMount() {
   }
 
-  handleChange(event) {
-    this.setState({ clothingType: event.target.value });
+  handleSeasonChange(event) {
+    this.setState({
+      season: event.target.value,
+      modified: true,
+    });
+  }
+
+  handleInput(e) {
+    const { value, name } = e.target;
+
+    this.setState({
+      [name]: value,
+      modified: true,
+    });
   }
 
   handleSubmit(event) {
-    this.props.onSaveClothing({
-      blob: this.state.blob,
-      clothingType: this.state.clothingType,
-    });
+    event.preventDefault();
+    this.currentItem.season = this.state.season;
+    this.currentItem.description = this.state.description;
+    this.props.onUpdateClothing(this.currentItem).then(this.reset);
   }
 
-  handleImageChange(blob) {
-    this.setState({ blob });
+  reset() {
+    this.setState({
+      modified: false,
+    });
   }
 
   render() {
-    const options = Object.keys(clothingTypes).map((x) => {
-      return (<option key={x} value={clothingTypes[x]}>{clothingTypes[x]}</option>);
-    });
+    const imgURL = URL.createObjectURL(this.props.currentItem.blob);
 
     return (
       <form onSubmit={this.handleSubmit}>
         <div>
+          <img src={imgURL} alt="article of clothing" />
           <div className="form-group">
-            <label htmlFor="type-input">Type:</label>
-            <select id="type-input" value={this.state.clothingType} onChange={this.handleChange}>
+            <label htmlFor="type-input">Season:</label>
+            <select id="type-input" value={this.state.season} onChange={this.handleSeasonChange}>
               <option value="-1" />
-              {options}
+              {seasonOptions()}
             </select>
           </div>
+          <div className="form-group">
+            <label htmlFor="desc-input">Description</label>
+            <input onChange={this.handleInput} value={this.state.description} className="form-control input-lg" id="desc-input" name="description" placeholder="Description" />
+          </div>
           <br />
-          <input type="submit" value="Save" />
+          {this.state.modified && <input type="submit" value="Update" />}
         </div>
       </form>
 
@@ -61,8 +83,12 @@ ClothingEditor.defaultProps = {
 };
 
 ClothingEditor.propTypes = {
-  onSaveClothing: PropTypes.func.isRequired,
-  newImage: PropTypes.string.isRequired,
+  onUpdateClothing: PropTypes.func.isRequired,
+  currentItem: PropTypes.shape({
+    timeStamp: PropTypes.number,
+    blob: PropTypes.instanceOf(Blob),
+    type: PropTypes.string,
+  }).isRequired,
 };
 
 export default ClothingEditor;

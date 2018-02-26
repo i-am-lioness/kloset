@@ -20,6 +20,7 @@ class ImageLink extends React.Component {
         className="folder-content-item list-group-item list-group-item-action"
         src={imgURL}
         alt={item.name}
+        onClick={this.props.onClick}
       />
     );
   }
@@ -40,6 +41,7 @@ ImageLink.propTypes = {
     // file: PropTypes.instanceOf(Uint8Array),
     file: PropTypes.instanceOf(Blob),
   }).isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default ImageLink;
